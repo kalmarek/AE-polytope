@@ -1,0 +1,3 @@
+[submodule "AE-PyTorch"]
+	path = AE-PyTorch
+	url = https://github.com/lukasruff/AE-PyTorch
