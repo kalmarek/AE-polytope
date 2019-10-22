@@ -21,17 +21,37 @@ function visualize_digits(features; width=25, dpp=28, margin=0px)
     plot(plts..., layout=grid(height, width), size=(width*dpp, height*dpp), margin=margin)
 end
 
-function reconstruct(verts; export_img=tempname()*".png", visualize_verts_scipt="../src/visualise_verts.py")
-    if occursin(".", export_img)
-        parts = split(export_img, ".")
-        fn, ext = join(parts[1:end-1], "."), parts[end]
-    else
-        fn = export_img
+struct AE end
+struct VAE end
+
+function reconstruct(verts; export_file=tempname(), seed=1, vae=true)
+    if endswith(".csv", export_file)
+        export_file = export_file[1:end-4]
     end
 
-    csv_file = fn*".csv"
-    @info "Writing points to" csv_file
-    writedlm(csv_file, verts, ',')
-    run(`python $visualize_verts_scipt $csv_file`)
-    return csv_file*"_rec"
+    dim = size(verts, 2)
+    input_file = export_file*".csv"
+    output_file = export_file*"_rec.csv"
+    @info "Writing points to" input_file
+    writedlm(input_file, verts, ',')
+
+    if vae
+        reconstruct(VAE, input_file, output_file, dim, seed)
+    else
+        reconstruct( AE, input_file, output_file, dim, seed)
+    end
+
+    return output_file
+end
+
+function reconstruct(::Type{VAE}, input_file, output_file, dim, seed)
+    run(`python ../AE-PyTorch/src/reconstruct.py $input_file $output_file mnist mnist_LeNet
+    ../AE-PyTorch/log/mnist_embed/vae/mnist/rep_dim=$dim/seed_$seed
+    --rep_dim $dim --device cpu --seed $seed --ae_model_type vae`)
+end
+
+function reconstruct(::Type{ AE}, input_file, output_file, dim, seed)
+    run(`python ../AE-PyTorch/src/reconstruct.py $input_file $output_file mnist mnist_LeNet
+    ../AE-PyTorch/log/mnist_embed/autoencoder/mnist/rep_dim=$dim/seed_$seed
+    --rep_dim $dim --device cpu --seed $seed --ae_model_type vanilla_ae`)
 end
