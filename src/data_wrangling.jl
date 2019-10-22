@@ -3,11 +3,11 @@ function prepare_poisoned_data(data, data_labels; id=3, percentage_outliers=0.02
 #     target class
     target_idcs = findall(data_labels .== id);
     target_data = data[:, target_idcs];
-    @show size(target_data)
+    # @show size(target_data)
 
 #     outlier class
     no_outs = ceil(Int, percentage_outliers * size(target_data,2))
-    @show no_outs
+    # @show no_outs
 
     outlier_idcs = Vector{Int}(undef, no_outs)
     for i in 1:no_outs
@@ -39,10 +39,8 @@ end
 AE_prefix() = joinpath(Base.dirname(Base.active_project()),
     "AE-PyTorch")
 
-function read_data_AE(set_name, prefix=AE_prefix(); set="train")
-    path = joinpath(prefix, set_name)
+function read_data_AE(path; set="train")
     features = readdlm(joinpath(path, "embed_$set.csv"), ',', Float64)
     labels = Int.(readdlm(joinpath(path, "labels_$set.csv"), ',', Float64))
-
     return features, labels
 end

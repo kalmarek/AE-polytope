@@ -123,7 +123,7 @@ end
 score(rpc::RandomPolytopeClassifier, point) = distance(rpc, point)
 
 function scale_verts(P::RandomPolytopeClassifier, scale)
-    points = dehomogenize(Matrix{Float64}(rpc_ae.polytope.VERTICES))
+    points = dehomogenize(Matrix{Float64}(P.polytope.VERTICES))
     points = scale!(points, P.center, scale)
     return points
 end
