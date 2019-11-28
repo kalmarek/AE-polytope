@@ -1,3 +1,8 @@
+mutable struct RandomPolytopeClassifier
+    polytope::Polymake.pm_perl_ObjectAllocated
+    inequalities::Matrix{Float64}
+    center::Vector{Float64}
+    diameter::Float64
 end
 
 function dual_bounding_body(pts::AbstractMatrix{T}, n_hyperplanes::Integer, k::Integer=1; seed=1234, digits=15) where T
@@ -33,19 +38,16 @@ function dual_bounding_body(pts::AbstractMatrix{T}, n_hyperplanes::Integer, k::I
     return P
 end
 
-mutable struct RandomPolytopeClassifier
-    polytope::Polymake.pm_perl_ObjectAllocated
-    inequalities::Matrix{Float64}
-    center::Vector{Float64}
-    diameter::Float64
-end
+function RandomPolytopeClassifier(points::AbstractMatrix, n_hyperplanes;
+        k=2, p=0.05, ε=0.1, seed=1234, digits=10)
 
-function RandomPolytopeClassifier(pts::AbstractMatrix;
-        hyperplanes=min(50, 2*(size(pts,2)+1)),
-        k=2, kwargs...)
-
-    P = dual_bounding_body(pts', hyperplanes=hyperplanes, k=k; kwargs...)
-    verts = Matrix{Float64}(P.VERTICES)
+    P = dual_bounding_body(points', n_hyperplanes, k; seed=seed, digits=digits)
+    # verts = Matrix{Float64}(P.VERTICES)
+    dim = size(points, 1)
+    dist = hausdorff_dist_to_sphere(dim, n_hyperplanes, p)
+    N = number_of_vertices(dim, dist; p=p, ε=ε)
+    @info "Selecting random $N vertices"
+    verts = Matrix{Float64}(randvert(P, N))
 
     ineqs = Matrix{Float64}(P.INEQUALITIES)
     center = (sum(verts, dims=1)./size(verts, 1))[1,:]
