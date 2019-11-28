@@ -1,4 +1,5 @@
 using Test
+max_kth!(perm::AbstractVector{<:Integer}, itr, k::Integer) = itr[partialsortperm!(perm, itr, k, rev=true)]
 
 using DelimitedFiles
 
