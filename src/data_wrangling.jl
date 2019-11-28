@@ -1,3 +1,5 @@
+using DelimitedFiles
+
 function prepare_poisoned_data(data, data_labels; id=3, percentage_outliers=0.02)
 
 #     target class

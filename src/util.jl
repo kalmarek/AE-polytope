@@ -1,9 +1,6 @@
-using Test
 max_kth!(perm::AbstractVector{<:Integer}, itr, k::Integer) = itr[partialsortperm!(perm, itr, k, rev=true)]
 
-using DelimitedFiles
-
-function symmetrize(pts::AbstractMatrix, augmented=false)
+function symmetrize(pts::AbstractMatrix, augmented::Bool=false)
     V = vcat(pts, -pts)
     if augmented
         V[size(pts,1)+1:end, 1] .= one(eltype(V))
@@ -11,9 +8,9 @@ function symmetrize(pts::AbstractMatrix, augmented=false)
     return V
 end
 
-symmetrize(poly) = @pm Polytope.Polytope(POINTS=symmetrize(poly.VERTICES, true))
+symmetrize(poly::Polymake.pm_perl_Object) = @pm Polytope.Polytope(POINTS=symmetrize(poly.VERTICES, true))
 
-function rand_sphere(dim, no_points; seed=rand(1:1000), digits=15) where T
+function rand_sphere(dim::Integer, no_points::Integer; seed=rand(1:1000), digits=15) where T
     Random.seed!(seed)
     pts = randn(dim, no_points)
     for i in 1:size(pts, 2)
@@ -22,9 +19,7 @@ function rand_sphere(dim, no_points; seed=rand(1:1000), digits=15) where T
     return round.(pts, digits=digits)
 end
 
-@test size(symmetrize(rand_sphere(3, 10)')) == (20, 3)
-
-function scale!(points, center, scale)
+function scale!(points::AbstractMatrix, center::AbstractVector, scale::Number)
     for i in 1:size(points, 1)
         @views points[i, :] .= scale.*(points[i, :] .- center) .+ center
     end
