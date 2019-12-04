@@ -5,37 +5,38 @@ mutable struct RandomPolytopeClassifier
     diameter::Float64
 end
 
-function dual_bounding_body(pts::AbstractMatrix{T}, n_hyperplanes::Integer, k::Integer=1; seed=1234, digits=15) where T
+function dual_inequalities(pts::AbstractArray, n_hyperplanes::Integer, k::Integer=1)
 
-    @assert size(pts, 2) <= 100 "Did You forgot to take transpose of pts?"
     # P = Polytope.rand_sphere(size(pts,2), hyperplanes, seed=seed, precision=digits)
     # verts = dehomogenize(Matrix{Float64}(P.VERTICES))
 
-    verts = symmetrize(rand_sphere(size(pts,2), n_hyperplanes, seed=seed, digits=digits)') # Matrix{Float64}
-
-    # mins = @views [
-        # maxk([dot(pts[i, :], verts[j, :]) for i in 1:size(pts, 1)], k)
-        # for j in 1:size(verts, 1)
-        # ]
-
-    n_hyperplanes = size(verts, 1)
-    S = promote_type(T, eltype(verts))
+    ineqs = symmetrize(rand_sphere(size(pts,2), n_hyperplanes)')
+    # Matrix{Float64}
+    S = promote_type(eltype(pts), eltype(ineqs))
+    intercepts = Vector{S}(undef, size(ineqs, 1))
 
     dots = Vector{S}(undef, size(pts,1))
-    mins = Vector{S}(undef, n_hyperplanes)
-
     sort_perm = Vector{Int}(undef, size(dots, 1)) # temporary storage
 
-    for j in eachindex(mins)
+    for j in eachindex(intercepts)
         for i in 1:size(pts, 1)
-            dots[i] = @views -dot(pts[i, :], verts[j, :])
+            dots[i] = @views dot(pts[i, :], ineqs[j, :])
         end
-        mins[j] = max_kth!(sort_perm, dots, k)
+        intercepts[j] = min_kth!(sort_perm, dots, k)
     end
 
-    ineqs = rationalize.(augment(verts, mins), tol=10.0^-digits)
-    P = @pm Polytope.Polytope(INEQUALITIES=ineqs)
-    return P
+    return ineqs, intercepts # describes ineqs*x + intercepts > 0
+end
+
+function dual_bounding_body(pts::AbstractMatrix{T}, n_hyperplanes::Integer, k::Integer=1; digits=10) where T
+
+    @assert size(pts, 2) <= 100 "Did You forgot to take transpose of pts?"
+
+    A, b = dual_inequalities(pts, n_hyperplanes, k)
+
+    ineqs = rationalize.(augment(A, -b), tol=10.0^-digits)
+
+    return @pm Polytope.Polytope(INEQUALITIES=ineqs) # Polytope{pm_Rational}
 end
 
 function RandomPolytopeClassifier(points::AbstractMatrix, n_hyperplanes;

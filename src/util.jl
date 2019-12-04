@@ -1,4 +1,4 @@
-max_kth!(perm::AbstractVector{<:Integer}, itr, k::Integer) = itr[partialsortperm!(perm, itr, k, rev=true)]
+min_kth!(perm::AbstractVector{<:Integer}, itr, k::Integer) = itr[partialsortperm!(perm, itr, k, rev=false)]
 
 function symmetrize(pts::AbstractMatrix, augmented::Bool=false)
     V = vcat(pts, -pts)
