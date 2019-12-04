@@ -27,10 +27,16 @@ function randvert(ineqs::AbstractMatrix{<:AbstractFloat}, n::Integer)
     obj = Polymake.pm_Vector{Float64}(dim)
     verts = pm_Matrix{Float64}(n, dim)
 
-    for i in 1:n
+    v = Polymake.pm_Vector{Float64}(dim)
+    k = 1;
+    while k <= n
         rand!(obj)
         obj[1] = 0
-        verts[i, :] .= Polymake.solve_LP(ineqs, obj)
+        v = Polymake.solve_LP(ineqs, obj)
+        if length(v) == dim
+            verts[k, :] .= v
+            k += 1
+        end
     end
     return verts
 end
