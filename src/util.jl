@@ -10,13 +10,12 @@ end
 
 symmetrize(poly::Polymake.pm_perl_Object) = @pm Polytope.Polytope(POINTS=symmetrize(poly.VERTICES, true))
 
-function rand_sphere(dim::Integer, no_points::Integer; seed=rand(1:1000), digits=15) where T
-    Random.seed!(seed)
+function rand_sphere(dim::Integer, no_points::Integer) where T
     pts = randn(dim, no_points)
     for i in 1:size(pts, 2)
         pts[:, i] ./= norm(pts[:, i], 2)
     end
-    return round.(pts, digits=digits)
+    return pts
 end
 
 function scale!(points::AbstractMatrix, center::AbstractVector, scale::Number)
