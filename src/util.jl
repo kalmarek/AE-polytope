@@ -68,8 +68,8 @@ function hausdorff_dist_to_sphere(dim::Integer, n_hyperplanes::Integer, p::Numbe
     return (up + lo)/2
 end
 
-function number_of_vertices(dim, hausdorff_dist; p=0.05, ε=0.1)
+function number_of_vertices(dim::Integer, hausdorff_dist::Number; p=0.05, ε=0.1)
     n = (1 + 2/dim*log(2/p))*(ℯ/(ℯ-1))*1/(ε^2*(1-hausdorff_dist)^2)
-    n > typemax(Int) && throw("Number of vertices exceeds $($typemax(Int)). Try increasing Hausdorff distance, p, or ε!")
+    n > typemax(Int) && throw("Number of vertices exceeds $(typemax(Int)). Try increasing Hausdorff distance, p, or ε!")
     return ceil(Int, n)
 end
